@@ -1,41 +1,49 @@
 use crate::book::Book;
+use crate::person::Person;
 
-pub struct Library {
-    pub books: Vec<Book>,
+pub struct Library<'a> {
+    pub books: Vec<Book<'a>>,
 }
 
-impl Library {
-    pub fn new() -> Self {
-        Self { books: Vec::new() }
+impl<'a> Library<'a> {
+    pub fn new() -> Library<'a> {
+        Library { books: Vec::new() }
     }
 
-    pub fn add_book(&mut self, book: Book) {
+    pub fn add_book(&mut self, book: Book<'a>) {
         self.books.push(book);
     }
 
-    pub fn list_books(&self) {
-        println!("Library Catalog:");
+    pub fn list_all_available_books(&self) {
+        println!("Available Library Catalog:");
         for (index, book) in self.books.iter().enumerate() {
-            let availability = if book.is_available {
-                "Available"
-            } else {
-                "Not Available"
-            };
-            println!(
-                "Book {}: {} by {} ({})",
-                index + 1,
-                book.title,
-                book.author,
-                availability
-            );
+            if book.is_available {
+                println!("Book {}: {} by {}", index + 1, book.title, book.author);
+            }
+        }
+    }
+
+    pub fn list_all_checkout_books(&self) {
+        println!("Checkout Library Catalog:");
+        for (index, book) in self.books.iter().enumerate() {
+            if !book.is_available {
+                let borrowed_by = book.borrowed_by.unwrap_or_default();
+                println!(
+                    "Book {}: {} by {} borrowed by {}",
+                    index + 1,
+                    book.title,
+                    book.author,
+                    borrowed_by
+                );
+            }
         }
     }
 
     // Borrow a book from the library
-    pub fn borrow_book(&mut self, title: &str) -> bool {
+    pub fn borrow_book(&mut self, title: &str, borrower: &'a Person<'a>) -> bool {
         for book in &mut self.books {
             if book.title == title && book.is_available {
-                book.borrow_book();
+                book.borrow_book(borrower);
                 return true;
             }
         }
